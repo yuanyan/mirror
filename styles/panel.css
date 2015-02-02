@@ -1,0 +1,69 @@
+#emr-max-width {
+	width: 6em;
+}
+
+.mirror__panel {
+	position: absolute;
+	line-height: 1.4;
+	width: 100%;
+	height: 4.5em;
+	left: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.6);
+	color: #fff;
+	padding: 0 10px;
+	font-weight: bold;
+	overflow: hidden;
+	z-index: 2;
+
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+.mirror__panel-section {
+	float: right;
+}
+
+.mirror__panel-section:first-child {
+	float: left;
+}
+
+.mirror__panel-option {
+	padding: 20px 10px;
+	display: inline-block;
+}
+
+.mirror__panel .mirror__button {
+	margin-top: -10px;
+	margin-bottom: -10px;
+}
+
+.mirror__panel input[type="checkbox"] {
+	opacity: 0;
+}
+
+.mirror__panel input[type="checkbox"]:focus + .mirror__icon {
+	color: #26bb9d;
+}
+
+.mirror__panel .mirror__icon[data-icon="checkbox"] {
+	position: absolute;
+	font-size: 15px;
+	margin-left: -18px;
+	margin-top: -1px;
+	color: #fff;
+}
+
+.mirror__panel-option-comment {
+	font-size: 11px;
+	color: #FFF;
+	display: inline-block;
+	width: 20em;
+	white-space: normal;
+	margin: -1em 0;
+	vertical-align: middle;
+	position: relative;
+	top: -0.2em;
+	-webkit-font-smoothing: antialiased;
+}
