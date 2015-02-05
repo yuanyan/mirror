@@ -54,6 +54,11 @@
         </div>
     </div>
 </div>
-<script src="./vendor/require.js" data-main="./scripts/app"></script>
+<script src="./vendor/require.js"></script>
+<script>
+    require(['./scripts/app'], function(app){
+        app('b1024,1600|w700|http://item.ny.taobao.com/item.htm?id=15351065596');
+    });
+</script>
 </body>
 </html>

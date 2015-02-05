@@ -9,89 +9,82 @@ define(function(require, exports, module) {
 	var syncScroll = require('./sync-scroll');
 	var overrideScroll = require('./override-scroll');
 
-	var state = location.hash;
-	var isAppView = true;
-	var allViews = null;
-	var defaultPreferences = {
-		maxWidthEnabled: true,
-		maxWidth: 700,
-		overrideScroll: overrideScroll.guessState()
-	};
+    var defaultPreferences = {
+        maxWidthEnabled: true,
+        maxWidth: 700,
+        overrideScroll: overrideScroll.guessState()
+    };
 
-	preferences.load(defaultPreferences);
-	var appData = serializer.unserialize(state);
+    function initMainView(uiContainer, appData) {
+        var scroller = ui.scroller(uiContainer);
+        var allViews = view.init(appData.url, appData.breakpoints, scroller, viewOptions());
 
-	if (!appData) {
-//		isAppView = false;
-//		appData = serializer.unserialize('b320,540,1024,1600|w700|./example/');
-		appData = serializer.unserialize('b320,540,1024,1600|w700|http://www.taobao.com/');
+        setTimeout(function() {
+            allViews.forEach(function(v) {
+                syncScroll.init(v);
+            });
+        }, 100);
+
+        return allViews;
+    }
+
+
+    function viewOptions(v) {
+        var options = {};
+        if (preferences.get('maxWidthEnabled')) {
+            options.maxWidth = preferences.get('maxWidth');
+        }
+
+        return options;
+    }
+
+    return function main(state){
+        state = state || location.hash;
+        var isAppView = true;
+        var allViews = null;
+
+        preferences.load(defaultPreferences);
+        var appData = serializer.unserialize(state);
+
+        var uiContainer = ui.create({
+            panel: isAppView,
+            maxWidth: {
+                enabled: preferences.get('maxWidthEnabled'),
+                value: preferences.get('maxWidth')
+            },
+            syncScroll: true,
+            overrideScroll: preferences.get('overrideScroll'),
+            reset: true
+        });
+
+        // start the app
+        document.body.appendChild(uiContainer);
+
+        allViews =  initMainView(uiContainer, appData);
+
+        // route events
+        eventRouter.setup({
+            updateViews: utils.throttle(function updateAllViews() {
+                allViews.forEach(function(v) {
+                    view.update(v, viewOptions(v));
+                });
+            }, 100),
+            reset: function reset() {
+                while (allViews.length) {
+                    view.remove(allViews.pop());
+                }
+                preferences.load(defaultPreferences);
+                appData = serializer.unserialize(state);
+                initMainView(appData.breakpoints);
+            }
+        });
+
+        event.on('view:remove', function(v) {
+            if (~allViews.indexOf(v)) {
+                allViews.splice(allViews.indexOf(v), 1);
+            }
+        });
 
     }
 
-	var uiContainer = ui.create({
-		panel: isAppView,
-		maxWidth: {
-			enabled: preferences.get('maxWidthEnabled'),
-			value: preferences.get('maxWidth')
-		},
-		syncScroll: isAppView ? 'disabled' : true,
-		overrideScroll: preferences.get('overrideScroll'),
-		reset: true
-	});
-
-	function initMainView(bp) {
-		var scroller = ui.scroller(uiContainer);
-		allViews = view.init(appData.url, bp, scroller, viewOptions());
-
-		setTimeout(function() {
-			if (!isAppView) {
-				allViews.forEach(function(v) {
-					syncScroll.init(v);
-				});
-			} else if (preferences.get('overrideScroll')) {
-				overrideScroll.enable(scroller);
-			}
-		}, 100);
-	}
-
-	function reset() {
-		while (allViews.length) {
-			view.remove(allViews.pop());
-		}
-		preferences.load(defaultPreferences);
-		appData = serializer.unserialize(state);
-		initMainView(appData.breakpoints);
-	}
-
-	function viewOptions(v) {
-		var options = {};
-		if (preferences.get('maxWidthEnabled')) {
-			options.maxWidth = preferences.get('maxWidth');
-		}
-
-		return options;
-	}
-
-	function updateAllViews() {
-		allViews.forEach(function(v) {
-			view.update(v, viewOptions(v));
-		});
-	}
-
-	// route events
-	eventRouter.setup({
-		updateViews: utils.throttle(updateAllViews, 100),
-		reset: reset
-	});
-
-	event.on('view:remove', function(v) {
-		if (~allViews.indexOf(v)) {
-			allViews.splice(allViews.indexOf(v), 1);
-		}
-	});
-
-	// start the app
-    document.body.appendChild(uiContainer);
-
-	initMainView(appData.breakpoints);
 });
